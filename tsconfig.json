@@ -6,7 +6,7 @@
     "sourceMap": true,
     "allowSyntheticDefaultImports": true,
     "outDir": "obj/",
-    "outFile": "../../build/drag_and_drop.js",
+    "outFile": "./test/drag_and_drop.js",
     "declaration": true
   },
   "exclude": [
