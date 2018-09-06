@@ -4,30 +4,53 @@ namespace BioDeep.UI {
 
     export class Container {
 
+        private containers: Dictionary<string[]>;
+
+        public get Data(): object {
+            var x = {};
+            var table = this.containers;
+
+            this.containers
+                .Keys
+                .ForEach(key => {
+                    x[key] = table.Item(key);
+                });
+
+            return x;
+        }
+
         /**
          * @param items 所需要进行拖拽的数据列表 是一个键值对，其中键名是资源的唯一标记，而键值则是用户界面显示使用的
          * @param containers 所接纳的容器对象的id编号列表
         */
-        public constructor(items: Map<string, string>[], containers: string[]) {
-            var data = Container.createDocument(items);
-            var msie = /*@cc_on!@*/0;
-            var links = data.Select(a => a.value).ToArray();
-            var el = null;
+        public constructor(
+            items: Map<string, string>[],
+            srcContainer: string,
+            containers: string[]) {
 
-            for (var i = 0; i < links.length; i++) {
-                el = links[i];
-                el.setAttribute('draggable', 'true');
+            this.registerDatas(items, srcContainer);
+            this.registerContainers(containers);
 
-                Linq.DOM.addEvent(el, 'dragstart', function (e) {
-                    var event = <DragEvent>e;
-                    // only dropEffect='copy' will be dropable
-                    event.dataTransfer.effectAllowed = 'copy';
-                    // required otherwise doesn't work
-                    event.dataTransfer.setData('Text', this.id);
-                });
-            }
+            stylingContainers(containers);
+            stylingItems(From(items).Select(id => id.key));
+        }
 
-            var bin = document.querySelector('#bin');
+        private registerContainers(names: string[]) {
+            var obj = {};
+
+            names.forEach(id => {
+                obj[id] = [];
+            })
+
+            this.containers = new Dictionary<string[]>(obj);
+            From(names)
+                .Select(id => document.querySelector(`#${id}`))
+                .ForEach(this.binEach);
+        }
+
+        private binEach(bin: HTMLElement) {
+            var key: string = bin.id;
+            var container = this.containers;
 
             Linq.DOM.addEvent(bin, 'dragover', function (e) {
                 if (e.preventDefault) {
@@ -35,6 +58,7 @@ namespace BioDeep.UI {
                     e.preventDefault();
                 }
                 this.className = 'over';
+
                 (<DragEvent>e).dataTransfer.dropEffect = 'copy';
 
                 return false;
@@ -57,32 +81,42 @@ namespace BioDeep.UI {
                 }
 
                 var event = <DragEvent>e;
-                var el = document.getElementById(event.dataTransfer.getData('Text'));
+                var data: string = event.dataTransfer.getData('Text')
+                var el = document.getElementById(data);
 
                 el.parentNode.removeChild(el);
-
                 // stupid nom text + fade effect
                 bin.className = '';
-                yum.innerHTML = eat[parseInt(Math.random() * eat.length)];
 
-                var y = yum.cloneNode(true);
-                bin.appendChild(y);
-
-                setTimeout(function () {
-                    var t = setInterval(function () {
-                        if (y.style.opacity <= 0) {
-                            if (msie) { // don't bother with the animation
-                                y.style.display = 'none';
-                            }
-                            clearInterval(t);
-                        } else {
-                            y.style.opacity -= 0.1;
-                        }
-                    }, 50);
-                }, 250);
+                // 在这里得到data数据之后，将数据添加进入对应的容器之中
+                container.Item(key).push(data);
 
                 return false;
             });
+        }
+
+        /**
+         * 为数据对象在容器之中注册鼠标事件
+        */
+        private registerDatas(items: Map<string, string>[], srcContainer: string) {
+            var data = Container.createDocument(items);
+            var container = document.getElementById(srcContainer);
+
+            data.ForEach(a => {
+                container.appendChild(a.key);
+            })
+            data.Select(a => a.value)
+                .ForEach(el => {
+                    el.setAttribute('draggable', 'true');
+
+                    Linq.DOM.addEvent(el, 'dragstart', function (e) {
+                        var event = <DragEvent>e;
+                        // only dropEffect='copy' will be dropable
+                        event.dataTransfer.effectAllowed = 'copy';
+                        // required otherwise doesn't work
+                        event.dataTransfer.setData('Text', el.id);
+                    });
+                });
         }
 
         private static createDocument(items: Map<string, string>[]): IEnumerator<Map<HTMLLIElement, HTMLAnchorElement>> {
