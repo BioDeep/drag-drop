@@ -28,6 +28,7 @@ namespace BioDeep.UI {
             srcContainer: string,
             containers: string[]) {
 
+            this.containers = new Dictionary<string[]>(TypeInfo.EmptyObject(containers, () => (<string[]>[])));
             this.registerDatas(items, srcContainer);
             this.registerContainers(containers);
 
@@ -36,14 +37,6 @@ namespace BioDeep.UI {
         }
 
         private registerContainers(names: string[]) {
-            var obj = {};
-
-            names.forEach(id => {
-                obj[id] = [];
-            })
-
-            this.containers = new Dictionary<string[]>(obj);
-            console.log(this.containers);
             From(names)
                 .Select(id => document.querySelector(`#${id}`))
                 .ForEach(this.binEach);
@@ -52,6 +45,8 @@ namespace BioDeep.UI {
         private binEach(bin: HTMLElement) {
             var key: string = bin.id;
             var container = this.containers;
+
+            console.log(container);
 
             Linq.DOM.addEvent(bin, 'dragover', function (e) {
                 if (e.preventDefault) {

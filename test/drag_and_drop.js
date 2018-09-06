@@ -9,6 +9,7 @@ var BioDeep;
              * @param containers 所接纳的容器对象的id编号列表
             */
             function Container(items, srcContainer, containers) {
+                this.containers = new Dictionary(TypeInfo.EmptyObject(containers, function () { return []; }));
                 this.registerDatas(items, srcContainer);
                 this.registerContainers(containers);
                 UI.stylingContainers(containers);
@@ -29,12 +30,6 @@ var BioDeep;
                 configurable: true
             });
             Container.prototype.registerContainers = function (names) {
-                var obj = {};
-                names.forEach(function (id) {
-                    obj[id] = [];
-                });
-                this.containers = new Dictionary(obj);
-                console.log(this.containers);
                 From(names)
                     .Select(function (id) { return document.querySelector("#" + id); })
                     .ForEach(this.binEach);
@@ -42,6 +37,7 @@ var BioDeep;
             Container.prototype.binEach = function (bin) {
                 var key = bin.id;
                 var container = this.containers;
+                console.log(container);
                 Linq.DOM.addEvent(bin, 'dragover', function (e) {
                     if (e.preventDefault) {
                         // allows us to drop
