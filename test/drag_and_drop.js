@@ -34,6 +34,9 @@ var BioDeep;
                 From(names)
                     .Select(function (id) { return document.querySelector("#" + id); })
                     .ForEach(function (container) {
+                    var ul = document.createElement("ul");
+                    ul.id = container.id + "-ul";
+                    container.appendChild(ul);
                     _this.binEach(container, _this.containers);
                 });
             };
@@ -62,14 +65,19 @@ var BioDeep;
                         e.stopPropagation();
                     }
                     var event = e;
-                    var data = event.dataTransfer.getData('Text');
-                    var el = document.getElementById(data);
+                    var strval = event.dataTransfer.getData('Text');
+                    console.log(strval);
+                    var data = JSON.parse(strval);
+                    var keyId = data.key;
+                    var el = document.getElementById(keyId);
                     el.parentNode.removeChild(el);
                     // stupid nom text + fade effect
                     bin.className = '';
+                    document.getElementById(bin.id + "-ul").appendChild(Container.createItem(data).key);
+                    UI.applyItemStyle(keyId);
                     // 在这里得到data数据之后，将数据添加进入对应的容器之中
-                    console.log(container);
-                    container.Item(key).push(data);
+                    // console.log(container);
+                    container.Item(key).push(data.key);
                     return false;
                 });
             };
@@ -87,26 +95,30 @@ var BioDeep;
                     el.setAttribute('draggable', 'true');
                     Linq.DOM.addEvent(el, 'dragstart', function (e) {
                         var event = e;
+                        var data = JSON.stringify({
+                            key: el.id,
+                            value: el.innerText
+                        });
                         // only dropEffect='copy' will be dropable
                         event.dataTransfer.effectAllowed = 'copy';
                         // required otherwise doesn't work
-                        event.dataTransfer.setData('Text', el.id);
+                        event.dataTransfer.setData('Text', data);
                     });
                 });
             };
+            Container.createItem = function (item) {
+                var li = document.createElement("li");
+                var a = document.createElement("a");
+                a.id = item.key;
+                a.href = "#";
+                a.innerText = item.value;
+                li.appendChild(a);
+                return {
+                    key: li, value: a
+                };
+            };
             Container.createDocument = function (items) {
-                return From(items)
-                    .Select(function (name) {
-                    var li = document.createElement("li");
-                    var a = document.createElement("a");
-                    a.id = name.key;
-                    a.href = "#";
-                    a.innerText = name.value;
-                    li.appendChild(a);
-                    return {
-                        key: li, value: a
-                    };
-                });
+                return From(items).Select(Container.createItem);
             };
             return Container;
         }());
@@ -131,20 +143,30 @@ var BioDeep;
         }
         UI.stylingContainers = stylingContainers;
         function stylingItems(keys) {
-            keys.ForEach(function (id) {
-                var a = document.getElementById(id);
-                var style = a.style;
-                style.textDecoration = "none";
-                style.color = "#000";
-                style.margin = "10px";
-                style.width = "150px";
-                style.border = "3px dashed #999";
-                style.background = "#eee";
-                style.padding = "10px";
-                style.display = "block";
-            });
+            if (typeof keys == "string") {
+                applyItemStyle(keys);
+            }
+            else if (Array.isArray(keys)) {
+                keys.forEach(applyItemStyle);
+            }
+            else {
+                keys.ForEach(applyItemStyle);
+            }
         }
         UI.stylingItems = stylingItems;
+        function applyItemStyle(id) {
+            var a = document.getElementById(id);
+            var style = a.style;
+            style.textDecoration = "none";
+            style.color = "#000";
+            style.margin = "10px";
+            style.width = "150px";
+            style.border = "3px dashed #999";
+            style.background = "#eee";
+            style.padding = "10px";
+            style.display = "block";
+        }
+        UI.applyItemStyle = applyItemStyle;
     })(UI = BioDeep.UI || (BioDeep.UI = {}));
 })(BioDeep || (BioDeep = {}));
 //# sourceMappingURL=drag_and_drop.js.map

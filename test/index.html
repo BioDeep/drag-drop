@@ -45,9 +45,16 @@
 
       <div id="bin1"></div>
       <div id="bin2"></div>
-      <ul id="src">
 
-      </ul>
+      <div>
+        <ul id="src">
+
+        </ul>
+      </div>
+      
+      <p>
+        <a href="javascript:void(0);" onclick="getData();">获取结果数据</a>
+      </p>
     </article>
 
     <script type="text/javascript">
@@ -58,6 +65,10 @@
       var dev = new BioDeep.UI.Container(items, "src", ["bin1", "bin2"]);
 
       console.log(items);
+
+      function getData() {
+        console.log(dev.Data);
+      }
     </script>
   </section>
 </body>

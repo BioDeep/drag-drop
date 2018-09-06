@@ -40,6 +40,10 @@ namespace BioDeep.UI {
             From(names)
                 .Select(id => <HTMLElement>document.querySelector(`#${id}`))
                 .ForEach(container => {
+                    var ul = document.createElement("ul");
+                    ul.id = `${container.id}-ul`;
+                    container.appendChild(ul);
+
                     this.binEach(container, this.containers)
                 });
         }
@@ -76,16 +80,23 @@ namespace BioDeep.UI {
                 }
 
                 var event = <DragEvent>e;
-                var data: string = event.dataTransfer.getData('Text')
-                var el = document.getElementById(data);
+                var strval: string = event.dataTransfer.getData('Text');
+
+                console.log(strval);
+
+                var data = <Map<string, string>>JSON.parse(strval);
+                var keyId: string = data.key;
+                var el = document.getElementById(keyId);
 
                 el.parentNode.removeChild(el);
                 // stupid nom text + fade effect
                 bin.className = '';
+                document.getElementById(`${bin.id}-ul`).appendChild(Container.createItem(data).key);
+                applyItemStyle(keyId);
 
                 // 在这里得到data数据之后，将数据添加进入对应的容器之中
-                console.log(container);
-                container.Item(key).push(data);
+                // console.log(container);
+                container.Item(key).push(data.key);
 
                 return false;
             });
@@ -107,29 +118,35 @@ namespace BioDeep.UI {
 
                     Linq.DOM.addEvent(el, 'dragstart', function (e) {
                         var event = <DragEvent>e;
+                        var data: string = JSON.stringify({
+                            key: el.id,
+                            value: el.innerText
+                        });
+
                         // only dropEffect='copy' will be dropable
                         event.dataTransfer.effectAllowed = 'copy';
                         // required otherwise doesn't work
-                        event.dataTransfer.setData('Text', el.id);
+                        event.dataTransfer.setData('Text', data);
                     });
                 });
         }
 
+        private static createItem(item: Map<string, string>): Map<HTMLLIElement, HTMLAnchorElement> {
+            var li = document.createElement("li");
+            var a = document.createElement("a");
+
+            a.id = item.key;
+            a.href = "#";
+            a.innerText = item.value;
+            li.appendChild(a);
+
+            return <Map<HTMLLIElement, HTMLAnchorElement>>{
+                key: li, value: a
+            };
+        }
+
         private static createDocument(items: Map<string, string>[]): IEnumerator<Map<HTMLLIElement, HTMLAnchorElement>> {
-            return From(items)
-                .Select(name => {
-                    var li = document.createElement("li");
-                    var a = document.createElement("a");
-
-                    a.id = name.key;
-                    a.href = "#";
-                    a.innerText = name.value;
-                    li.appendChild(a);
-
-                    return <Map<HTMLLIElement, HTMLAnchorElement>>{
-                        key: li, value: a
-                    };
-                });
+            return From(items).Select(Container.createItem);
         }
     }
 }
