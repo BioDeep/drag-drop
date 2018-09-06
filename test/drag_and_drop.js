@@ -34,6 +34,7 @@ var BioDeep;
                     obj[id] = [];
                 });
                 this.containers = new Dictionary(obj);
+                console.log(this.containers);
                 From(names)
                     .Select(function (id) { return document.querySelector("#" + id); })
                     .ForEach(this.binEach);
@@ -70,6 +71,7 @@ var BioDeep;
                     // stupid nom text + fade effect
                     bin.className = '';
                     // 在这里得到data数据之后，将数据添加进入对应的容器之中
+                    console.log(container);
                     container.Item(key).push(data);
                     return false;
                 });

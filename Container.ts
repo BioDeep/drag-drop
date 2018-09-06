@@ -43,6 +43,7 @@ namespace BioDeep.UI {
             })
 
             this.containers = new Dictionary<string[]>(obj);
+            console.log(this.containers);
             From(names)
                 .Select(id => document.querySelector(`#${id}`))
                 .ForEach(this.binEach);
@@ -89,6 +90,7 @@ namespace BioDeep.UI {
                 bin.className = '';
 
                 // 在这里得到data数据之后，将数据添加进入对应的容器之中
+                console.log(container);
                 container.Item(key).push(data);
 
                 return false;
