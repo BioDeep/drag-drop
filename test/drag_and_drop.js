@@ -30,14 +30,15 @@ var BioDeep;
                 configurable: true
             });
             Container.prototype.registerContainers = function (names) {
+                var _this = this;
                 From(names)
                     .Select(function (id) { return document.querySelector("#" + id); })
-                    .ForEach(this.binEach);
+                    .ForEach(function (container) {
+                    _this.binEach(container, _this.containers);
+                });
             };
-            Container.prototype.binEach = function (bin) {
+            Container.prototype.binEach = function (bin, container) {
                 var key = bin.id;
-                var container = this.containers;
-                console.log(container);
                 Linq.DOM.addEvent(bin, 'dragover', function (e) {
                     if (e.preventDefault) {
                         // allows us to drop

@@ -38,15 +38,14 @@ namespace BioDeep.UI {
 
         private registerContainers(names: string[]) {
             From(names)
-                .Select(id => document.querySelector(`#${id}`))
-                .ForEach(this.binEach);
+                .Select(id => <HTMLElement>document.querySelector(`#${id}`))
+                .ForEach(container => {
+                    this.binEach(container, this.containers)
+                });
         }
 
-        private binEach(bin: HTMLElement) {
+        private binEach(bin: HTMLElement, container: Dictionary<string[]>) {
             var key: string = bin.id;
-            var container = this.containers;
-
-            console.log(container);
 
             Linq.DOM.addEvent(bin, 'dragover', function (e) {
                 if (e.preventDefault) {
