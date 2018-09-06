@@ -6,6 +6,9 @@ namespace BioDeep.UI {
 
         private containers: Dictionary<string[]>;
 
+        /**
+         * 从这个属性获取得到拖拽的结果数据
+        */
         public get Data(): object {
             var x = {};
             var table = this.containers;
@@ -48,6 +51,9 @@ namespace BioDeep.UI {
                 });
         }
 
+        /**
+         * 为某一个指定的容器对象注册鼠标事件
+        */
         private binEach(bin: HTMLElement, container: Dictionary<string[]>) {
             var key: string = bin.id;
 

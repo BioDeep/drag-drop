@@ -16,6 +16,9 @@ var BioDeep;
                 UI.stylingItems(From(items).Select(function (id) { return id.key; }));
             }
             Object.defineProperty(Container.prototype, "Data", {
+                /**
+                 * 从这个属性获取得到拖拽的结果数据
+                */
                 get: function () {
                     var x = {};
                     var table = this.containers;
@@ -40,6 +43,9 @@ var BioDeep;
                     _this.binEach(container, _this.containers);
                 });
             };
+            /**
+             * 为某一个指定的容器对象注册鼠标事件
+            */
             Container.prototype.binEach = function (bin, container) {
                 var key = bin.id;
                 Linq.DOM.addEvent(bin, 'dragover', function (e) {
