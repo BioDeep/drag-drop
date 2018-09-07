@@ -1,0 +1,12 @@
+{
+  "name": "group-drag-drop",
+  "version": "0.0.0",
+  "description": "GroupDragDrop",
+  "main": "server.js",
+  "author": {
+    "name": ""
+  },
+  "devDependencies": {
+    "@types/node": "^8.0.14"
+  }
+}
