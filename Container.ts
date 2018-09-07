@@ -31,12 +31,17 @@ namespace BioDeep.UI {
             srcContainer: string,
             containers: string[]) {
 
-            this.containers = new Dictionary<string[]>(TypeInfo.EmptyObject(containers, () => (<string[]>[])));
+            var union = [...containers];
+            union.push(srcContainer);
+
+            this.containers = new Dictionary<string[]>(TypeInfo.EmptyObject(union, () => (<string[]>[])));
             this.registerDatas(items, srcContainer);
             this.registerContainers(containers);
+            this.registerContainers([srcContainer]);
 
             stylingContainers(containers);
             stylingItems(From(items).Select(id => id.key));
+            stylingContainers([srcContainer]);
         }
 
         private registerContainers(names: string[]) {
@@ -56,6 +61,7 @@ namespace BioDeep.UI {
         */
         private binEach(bin: HTMLElement, container: Dictionary<string[]>) {
             var key: string = bin.id;
+            var dev = this;
 
             Linq.DOM.addEvent(bin, 'dragover', function (e) {
                 if (e.preventDefault) {
@@ -88,25 +94,66 @@ namespace BioDeep.UI {
                 var event = <DragEvent>e;
                 var strval: string = event.dataTransfer.getData('Text');
 
-                console.log(strval);
+                // console.log(strval);
 
                 var data = <Map<string, string>>JSON.parse(strval);
                 var keyId: string = data.key;
                 var el = document.getElementById(keyId);
+                // var newItem = Container.createNewItem(data);
+                var newItem = Container.createItem(data);
 
-                el.parentNode.removeChild(el);
+                el.parentNode.parentNode.removeChild(el.parentNode);
                 // stupid nom text + fade effect
                 bin.className = '';
-                document.getElementById(`${bin.id}-ul`).appendChild(Container.createItem(data).key);
+                document.getElementById(`${bin.id}-ul`).appendChild(newItem.key);
                 applyItemStyle(keyId);
+                dev.registerItemDragEvent(newItem.value);
+                
+                container.Keys.ForEach(key => {
+                    if (container.Item(key).indexOf(data.key) > -1) {
+                        var list = From(container.Item(key))
+                            .Where(id => id != data.key)
+                            .ToArray();
+
+                        container.Delete(key).Add(key, list);
+                    }
+                })
 
                 // 在这里得到data数据之后，将数据添加进入对应的容器之中
-                // console.log(container);
+                
                 container.Item(key).push(data.key);
+                localStorage.setItem("groupset", JSON.stringify(dev.Data));
 
+                // console.log(container);
                 return false;
             });
         }
+
+        /**
+         * 将其他的容器之中的数据给删除
+        */
+        // public deleteData(idValue: string ) {
+
+
+        // }
+
+        private registerItemDragEvent(a: HTMLAnchorElement): void {
+            a.setAttribute('draggable', 'true');
+
+            Linq.DOM.addEvent(a, 'dragstart', function (e) {
+                var event = <DragEvent>e;
+                var data: string = JSON.stringify({
+                    key: a.id,
+                    value: a.innerText
+                });
+
+                // only dropEffect='copy' will be dropable
+                event.dataTransfer.effectAllowed = 'copy';
+                // required otherwise doesn't work
+                event.dataTransfer.setData('Text', data);
+            });
+        }
+
 
         /**
          * 为数据对象在容器之中注册鼠标事件
@@ -120,27 +167,61 @@ namespace BioDeep.UI {
             })
             data.Select(a => a.value)
                 .ForEach(el => {
-                    el.setAttribute('draggable', 'true');
-
-                    Linq.DOM.addEvent(el, 'dragstart', function (e) {
-                        var event = <DragEvent>e;
-                        var data: string = JSON.stringify({
-                            key: el.id,
-                            value: el.innerText
-                        });
-
-                        // only dropEffect='copy' will be dropable
-                        event.dataTransfer.effectAllowed = 'copy';
-                        // required otherwise doesn't work
-                        event.dataTransfer.setData('Text', data);
-                    });
+                    this.registerItemDragEvent(el);
                 });
         }
+
+        /**
+         * 测试部分开始
+         */
+
+        /**
+         * 原始数据分组移动时，在新的分组中添加数据显示
+        */
+
+        private static createNewItem(item: Map<string, string>): Map<HTMLLIElement, HTMLAnchorElement> {
+            var li = document.createElement("li");
+            var a = document.createElement("a");
+            var i_tag = document.createElement("i");
+            
+            a.id = item.key;
+            a.href = "#";
+            a.innerText = item.value;
+            var a_style = a.style;
+            a_style.cssFloat = "left";
+            li.appendChild(a);
+
+            i_tag.className  = "fa fa-times";
+            i_tag.onclick = function() { 
+                i_tag.parentNode.removeChild(i_tag);
+
+            };
+            var style = i_tag.style;
+            style.lineHeight  = "line-height: 52px";
+            style.color       = "red";
+            style.fontSize    = "20px";
+            style.cursor      = "pointer";
+            style.cssFloat    = "right";
+            style.marginRight = "10px";
+            style.marginTop   = "20px";
+            li.appendChild(i_tag);
+
+            return <Map<HTMLLIElement, HTMLAnchorElement>>{
+                key: li, value: a
+            };
+        }
+        
+
+        /**
+         * 测试结束
+         */
+
+
 
         private static createItem(item: Map<string, string>): Map<HTMLLIElement, HTMLAnchorElement> {
             var li = document.createElement("li");
             var a = document.createElement("a");
-
+            
             a.id = item.key;
             a.href = "#";
             a.innerText = item.value;

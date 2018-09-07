@@ -5,10 +5,11 @@
             var div = document.getElementById(id);
             var style = div.style;
 
-            style.height = "250px";
-            style.width = "166px";
+            style.height = "450px";
+            style.width = "100%";
             style.cssFloat = "left";
-            style.border = "5px solid #000";
+            style.backgroundColor = "#d9edf7";
+            style.borderRadius = "5px";
             style.position = "relative";
             style.marginTop = "0";
         })
@@ -29,12 +30,17 @@
         var style = a.style;
 
         style.textDecoration = "none";
-        style.color = "#000";
-        style.margin = "10px";
-        style.width = "150px";
-        style.border = "3px dashed #999";
-        style.background = "#eee";
+        style.width = "85%";
+        style.background = "rgb(238, 238, 238)";
         style.padding = "10px";
         style.display = "block";
+        style.color = "#fff";
+        style.margin = "10px 0px 10px 5%";
+        style.backgroundColor = "#1ea2e9";
+        style.border = "1px solid #428bca";
+        style.cursor = "pointer";
+        style.borderRadius = "5px";
+        style.fontSize = "13px";
+
     }
 }
