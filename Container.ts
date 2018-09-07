@@ -60,10 +60,19 @@ namespace BioDeep.UI {
             stylingItems(From(filter).Select(id => id.key));
             stylingContainers([srcContainer]);
 
+            this.storeKey = storeKey;
+            this.init(items);
+        }
+
+        /**
+         * @param items 使用这个参数主要是为了得到在用户界面上的显示title
+        */
+        private init(items: Map<string, string>[]) {
             var data = this.containers;
             var maps = new Dictionary<string>(items);
 
-            this.storeKey = storeKey;
+            console.log(maps);
+
             this.containers
                 .Keys
                 .ForEach(containerId => {
@@ -76,8 +85,6 @@ namespace BioDeep.UI {
                         document.getElementById(`${containerId}-ul`).appendChild(newItem.key);
                         applyItemStyle(keyId);
                     });
-
-
                 });
         }
 
@@ -198,9 +205,12 @@ namespace BioDeep.UI {
                 });
         }
 
+        /**
+         * @param item 资源的键值对数据，key为数据库之中的唯一编号，value则是这个资源的用户界面上的显示标题
+        */
         private static createItem(item: Map<string, string>): Map<HTMLLIElement, HTMLAnchorElement> {
             var li = document.createElement("li");
-            var a = document.createElement("a");
+            var a = document.createElement("a");            
 
             a.id = item.key;
             a.href = "#";
