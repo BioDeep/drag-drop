@@ -53,21 +53,21 @@ namespace BioDeep.UI {
                 .ToArray();
 
             this.registerDatas(filter, srcContainer);
-            this.registerContainers(containers);
-            this.registerContainers([srcContainer]);
+            this.registerContainers(union.ToArray());
 
             stylingContainers(containers);
             stylingItems(From(filter).Select(id => id.key));
             stylingContainers([srcContainer]);
 
             this.storeKey = storeKey;
-            this.init(items);
+            this.init(items, srcContainer);
         }
 
         /**
          * @param items 使用这个参数主要是为了得到在用户界面上的显示title
+         * @param src 因为数据源已经在前面的registerDatas函数中初始化过了，所以在这个初始化函数中会跳过
         */
-        private init(items: Map<string, string>[]) {
+        private init(items: Map<string, string>[], src: string) {
             var data = this.containers;
             var maps = new Dictionary<string>(items);
 
@@ -75,14 +75,16 @@ namespace BioDeep.UI {
 
             this.containers
                 .Keys
+                .Where(id => id != src)
                 .ForEach(containerId => {
                     var keys: string[] = data.Item(containerId);
 
                     keys.forEach(keyId => {
-                        var value = maps.Item(keyId);
-                        var newItem = Container.createItem(new Map<string, string>(keyId, value));
+                        var value = new Map<string, string>(keyId, maps.Item(keyId));
+                        var newItem = Container.createItem(value);
+                        var ul: string = `${containerId}-ul`;
 
-                        document.getElementById(`${containerId}-ul`).appendChild(newItem.key);
+                        document.getElementById(ul).appendChild(newItem.key);
                         applyItemStyle(keyId);
                     });
                 });
@@ -142,17 +144,27 @@ namespace BioDeep.UI {
 
         private dropData(event: DragEvent, bin: HTMLElement, container: Dictionary<string[]>) {
             var strval: string = event.dataTransfer.getData('Text');
-            var data = <Map<string, string>>JSON.parse(strval);
+            var data: Map<string, string>;
+
+            try {
+                data = JSON.parse(strval);
+            } catch (ex) {
+                console.error("JSON parser error: " + strval);
+                return false;
+            }
+
             var keyId: string = data.key;
             var el = document.getElementById(keyId);
             var newItem = Container.createItem(data);
             var key: string = bin.id;
+            var ul: string = `${bin.id}-ul`;
 
             el.parentNode.parentNode.removeChild(el.parentNode);
             // stupid nom text + fade effect
             bin.className = '';
-            document.getElementById(`${bin.id}-ul`).appendChild(newItem.key);
+            document.getElementById(ul).appendChild(newItem.key);
             applyItemStyle(keyId);
+
             this.registerItemDragEvent(newItem.value);
 
             container.Keys.ForEach(key => {
@@ -210,7 +222,7 @@ namespace BioDeep.UI {
         */
         private static createItem(item: Map<string, string>): Map<HTMLLIElement, HTMLAnchorElement> {
             var li = document.createElement("li");
-            var a = document.createElement("a");            
+            var a = document.createElement("a");
 
             a.id = item.key;
             a.href = "#";
