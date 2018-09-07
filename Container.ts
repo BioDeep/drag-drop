@@ -70,6 +70,7 @@ namespace BioDeep.UI {
         private init(items: Map<string, string>[], src: string) {
             var data = this.containers;
             var maps = new Dictionary<string>(items);
+            var dev: Container = this;
 
             console.log(maps);
 
@@ -86,6 +87,7 @@ namespace BioDeep.UI {
 
                         document.getElementById(ul).appendChild(newItem.key);
                         applyItemStyle(keyId);
+                        dev.registerItemDragEvent(newItem.value);
                     });
                 });
         }
