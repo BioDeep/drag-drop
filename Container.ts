@@ -71,15 +71,13 @@ namespace BioDeep.UI {
             var data = this.containers;
             var maps = new Dictionary<string>(items);
             var dev: Container = this;
-
-            console.log(maps);
-
+            
             this.containers
                 .Keys
                 .Where(id => id != src)
                 .ForEach(containerId => {
                     var keys: string[] = data.Item(containerId);
-
+                    
                     keys.forEach(keyId => {
                         var value = new Map<string, string>(keyId, maps.Item(keyId));
                         var newItem = Container.createItem(value);
