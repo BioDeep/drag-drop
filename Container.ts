@@ -33,10 +33,12 @@ namespace BioDeep.UI {
             containers: string[],
             storeKey: string = "group_set") {
 
-            var union: IEnumerator<string> = From(containers).ToList().Add(srcContainer);
+            var union: IEnumerator<string> = From(containers)
+                .ToList()
+                .Add(srcContainer);
             var groupset: string = localStorage.getItem(storeKey);
 
-            if (groupset && groupset != undefined && typeof groupset != "undefined" && groupset != null) {
+            if (!isNullOrUndefined(groupset)) {
                 this.containers = new Dictionary<string[]>(JSON.parse(groupset));
             } else {
                 this.containers = new Dictionary<string[]>(TypeInfo.EmptyObject(union, () => (<string[]>[])));
@@ -71,19 +73,19 @@ namespace BioDeep.UI {
             var data = this.containers;
             var maps = new Dictionary<string>(items);
             var dev: Container = this;
-            
+
             this.containers
                 .Keys
                 .Where(id => id != src)
                 .ForEach(containerId => {
                     var keys: string[] = data.Item(containerId);
-                    
+
                     keys.forEach(keyId => {
                         var value = new Map<string, string>(keyId, maps.Item(keyId));
                         var newItem = Container.createItem(value);
-                        var ul: string = `${containerId}-ul`;
+                        var ul: string = `#${containerId}-ul`;
 
-                        document.getElementById(ul).appendChild(newItem.key);
+                        (<HTMLElement>$ts(ul)).appendChild(newItem.key);
                         applyItemStyle(keyId);
                         dev.registerItemDragEvent(newItem.value);
                     });
@@ -94,10 +96,9 @@ namespace BioDeep.UI {
             From(names)
                 .Select(id => <HTMLElement>document.querySelector(`#${id}`))
                 .ForEach(container => {
-                    var ul = document.createElement("ul");
-                    ul.id = `${container.id}-ul`;
-                    container.appendChild(ul);
-
+                    container.appendChild($ts("<ul>", {
+                        id: `${container.id}-ul`
+                    }));
                     this.binEach(container, this.containers)
                 });
         }
@@ -108,7 +109,7 @@ namespace BioDeep.UI {
         private binEach(bin: HTMLElement, container: Dictionary<string[]>) {
             var dev = this;
 
-            Linq.DOM.addEvent(bin, 'dragover', function (e) {
+            DOM.addEvent(bin, 'dragover', function (e) {
                 if (e.preventDefault) {
                     // allows us to drop
                     e.preventDefault();
@@ -121,16 +122,16 @@ namespace BioDeep.UI {
             });
 
             // to get IE to work
-            Linq.DOM.addEvent(bin, 'dragenter', function (e) {
+            DOM.addEvent(bin, 'dragenter', function (e) {
                 this.className = 'over';
                 return false;
             });
 
-            Linq.DOM.addEvent(bin, 'dragleave', function () {
+            DOM.addEvent(bin, 'dragleave', function () {
                 this.className = '';
             });
 
-            Linq.DOM.addEvent(bin, 'drop', function (e) {
+            DOM.addEvent(bin, 'drop', function (e) {
                 if (e.stopPropagation) {
                     // stops the browser from redirecting...why???
                     e.stopPropagation();
@@ -179,14 +180,13 @@ namespace BioDeep.UI {
 
             // 在这里得到data数据之后，将数据添加进入对应的容器之中
             container.Item(key).push(data.key);
-
             localStorage.setItem(this.storeKey, JSON.stringify(this.Data));
         }
 
         private registerItemDragEvent(a: HTMLAnchorElement): void {
             a.setAttribute('draggable', 'true');
 
-            Linq.DOM.addEvent(a, 'dragstart', function (e) {
+            DOM.addEvent(a, 'dragstart', function (e) {
                 var event = <DragEvent>e;
                 var data: string = JSON.stringify({
                     key: a.id,
@@ -222,15 +222,16 @@ namespace BioDeep.UI {
         */
         private static createItem(item: Map<string, string>): Map<HTMLLIElement, HTMLAnchorElement> {
             var li = document.createElement("li");
-            var a = document.createElement("a");
+            var a: HTMLTsElement = (<HTMLTsElement>$ts("<a>", {
+                id: item.key,
+                href: "#"
+            }).asExtends).text(item.value);
 
-            a.id = item.key;
-            a.href = "#";
-            a.innerText = item.value;
-            li.appendChild(a);
+            li.appendChild(a.HTMLElement);
 
             return <Map<HTMLLIElement, HTMLAnchorElement>>{
-                key: li, value: a
+                key: li,
+                value: a.HTMLElement
             };
         }
 

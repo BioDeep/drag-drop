@@ -8,7 +8,7 @@
             var div = document.getElementById(id);
             var style = div.style;
 
-            style.height = "450px";
+            style.height = "auto";
             style.width = "100%";
             style.cssFloat = "left";
             style.backgroundColor = "#d9edf7";
