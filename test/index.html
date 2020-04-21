@@ -4,8 +4,8 @@
 <head>
   <meta charset=utf-8>
   <meta name="viewport" content="width=device-width">
-  <script type="text/javascript" src="http://msms.biodeep.cn/modules/build/linq.js"></script>
-  <script type="text/javascript" src="drag_and_drop.js"></script>
+  <script type="text/javascript" src="http://cdn.biodeep.cn:8848/typescripts/build/linq.js"></script>
+  <script type="text/javascript" src="http://cdn.biodeep.cn:8848/typescripts/build/dragDropSelector.js"></script>
 </head>
 
 <body>
@@ -58,9 +58,9 @@
     </article>
 
     <script type="text/javascript">
-      var items = From(['yum!', 'gulp', 'burp!', 'nom'])
+      var items = $from(['yum!', 'gulp', 'burp!', 'nom'])
         .Select(function (name, i) {
-          return new Map(i, name);
+          return new MapTuple(i, name);
         }).ToArray();
       var dev = new BioDeep.UI.Container(items, "src", ["bin1", "bin2"]);
 

@@ -28,12 +28,12 @@ namespace BioDeep.UI {
          * @param containers 所接纳的容器对象的id编号列表
         */
         public constructor(
-            items: Map<string, string>[],
+            items: MapTuple<string, string>[],
             srcContainer: string,
             containers: string[],
             storeKey: string = "group_set") {
 
-            var union: IEnumerator<string> = From(containers)
+            var union: IEnumerator<string> = $from(containers)
                 .ToList()
                 .Add(srcContainer);
             var groupset: string = localStorage.getItem(storeKey);
@@ -41,16 +41,16 @@ namespace BioDeep.UI {
             if (!isNullOrUndefined(groupset)) {
                 this.containers = new Dictionary<string[]>(JSON.parse(groupset));
             } else {
-                this.containers = new Dictionary<string[]>(TypeInfo.EmptyObject(union, () => (<string[]>[])));
+                this.containers = new Dictionary<string[]>(Activator.EmptyObject(union, () => (<string[]>[])));
                 // 在初始化的时候src应该是有所有的数据的
                 this.containers.Delete(srcContainer).Add(
                     srcContainer,
-                    From(items).Select(map => map.key).ToArray()
+                    $from(items).Select(map => map.key).ToArray()
                 );
             }
 
             var srcItems = this.containers.Item(srcContainer);
-            var filter = From(items)
+            var filter = $from(items)
                 .Where(key => srcItems.indexOf(key.key) > -1)
                 .ToArray();
 
@@ -58,7 +58,7 @@ namespace BioDeep.UI {
             this.registerContainers(union.ToArray());
 
             stylingContainers(containers);
-            stylingItems(From(filter).Select(id => id.key));
+            stylingItems($from(filter).Select(id => id.key));
             stylingContainers([srcContainer]);
 
             this.storeKey = storeKey;
@@ -69,7 +69,7 @@ namespace BioDeep.UI {
          * @param items 使用这个参数主要是为了得到在用户界面上的显示title
          * @param src 因为数据源已经在前面的registerDatas函数中初始化过了，所以在这个初始化函数中会跳过
         */
-        private init(items: Map<string, string>[], src: string) {
+        private init(items: MapTuple<string, string>[], src: string) {
             var data = this.containers;
             var maps = new Dictionary<string>(items);
             var dev: Container = this;
@@ -81,7 +81,7 @@ namespace BioDeep.UI {
                     var keys: string[] = data.Item(containerId);
 
                     keys.forEach(keyId => {
-                        var value = new Map<string, string>(keyId, maps.Item(keyId));
+                        var value = new MapTuple<string, string>(keyId, maps.Item(keyId));
                         var newItem = Container.createItem(value);
                         var ul: string = `#${containerId}-ul`;
 
@@ -93,7 +93,7 @@ namespace BioDeep.UI {
         }
 
         private registerContainers(names: string[]) {
-            From(names)
+            $from(names)
                 .Select(id => <HTMLElement>document.querySelector(`#${id}`))
                 .ForEach(container => {
                     container.appendChild($ts("<ul>", {
@@ -109,7 +109,7 @@ namespace BioDeep.UI {
         private binEach(bin: HTMLElement, container: Dictionary<string[]>) {
             var dev = this;
 
-            DOM.addEvent(bin, 'dragover', function (e) {
+            DOM.Events.addEvent(bin, 'dragover', function (e) {
                 if (e.preventDefault) {
                     // allows us to drop
                     e.preventDefault();
@@ -122,16 +122,16 @@ namespace BioDeep.UI {
             });
 
             // to get IE to work
-            DOM.addEvent(bin, 'dragenter', function (e) {
+            DOM.Events.addEvent(bin, 'dragenter', function (e) {
                 this.className = 'over';
                 return false;
             });
 
-            DOM.addEvent(bin, 'dragleave', function () {
+            DOM.Events.addEvent(bin, 'dragleave', function () {
                 this.className = '';
             });
 
-            DOM.addEvent(bin, 'drop', function (e) {
+            DOM.Events.addEvent(bin, 'drop', function (e) {
                 if (e.stopPropagation) {
                     // stops the browser from redirecting...why???
                     e.stopPropagation();
@@ -145,7 +145,7 @@ namespace BioDeep.UI {
 
         private dropData(event: DragEvent, bin: HTMLElement, container: Dictionary<string[]>) {
             var strval: string = event.dataTransfer.getData('Text');
-            var data: Map<string, string>;
+            var data: MapTuple<string, string>;
 
             try {
                 data = JSON.parse(strval);
@@ -170,7 +170,7 @@ namespace BioDeep.UI {
 
             container.Keys.ForEach(key => {
                 if (container.Item(key).indexOf(data.key) > -1) {
-                    var list = From(container.Item(key))
+                    var list = $from(container.Item(key))
                         .Where(id => id != data.key)
                         .ToArray();
 
@@ -186,7 +186,7 @@ namespace BioDeep.UI {
         private registerItemDragEvent(a: HTMLAnchorElement): void {
             a.setAttribute('draggable', 'true');
 
-            DOM.addEvent(a, 'dragstart', function (e) {
+            DOM.Events.addEvent(a, 'dragstart', function (e) {
                 var event = <DragEvent>e;
                 var data: string = JSON.stringify({
                     key: a.id,
@@ -204,7 +204,7 @@ namespace BioDeep.UI {
         /**
          * 为数据对象在容器之中注册鼠标事件
         */
-        private registerDatas(items: Map<string, string>[], srcContainer: string) {
+        private registerDatas(items: MapTuple<string, string>[], srcContainer: string) {
             var data = Container.createDocument(items);
             var container = document.getElementById(srcContainer);
 
@@ -220,7 +220,7 @@ namespace BioDeep.UI {
         /**
          * @param item 资源的键值对数据，key为数据库之中的唯一编号，value则是这个资源的用户界面上的显示标题
         */
-        private static createItem(item: Map<string, string>): Map<HTMLLIElement, HTMLAnchorElement> {
+        private static createItem(item: MapTuple<string, string>): MapTuple<HTMLLIElement, HTMLAnchorElement> {
             var li = document.createElement("li");
             var a: HTMLTsElement = (<HTMLTsElement>$ts("<a>", {
                 id: item.key,
@@ -229,14 +229,14 @@ namespace BioDeep.UI {
 
             li.appendChild(a.HTMLElement);
 
-            return <Map<HTMLLIElement, HTMLAnchorElement>>{
+            return <MapTuple<HTMLLIElement, HTMLAnchorElement>>{
                 key: li,
                 value: a.HTMLElement
             };
         }
 
-        private static createDocument(items: Map<string, string>[]): IEnumerator<Map<HTMLLIElement, HTMLAnchorElement>> {
-            return From(items).Select(Container.createItem);
+        private static createDocument(items: MapTuple<string, string>[]): IEnumerator<MapTuple<HTMLLIElement, HTMLAnchorElement>> {
+            return $from(items).Select(Container.createItem);
         }
     }
 }
